@@ -1,0 +1,301 @@
+# SHOGI BOARD
+board = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+
+display_board = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+
+black_hand = []
+white_hand = []
+
+board_setups = {
+    "no_handicap": "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL",
+    "kyo_ochi": "lnsgkgsnl/1b5r1/ppppppppp/9/9/9/PPPPPPPPP/1R5B1/1NSGKGSNL",
+    "kaku_ochi": "lnsgkgsnl/1r7/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL",
+    "hisha_ochi": "lnsgkgsnl/7b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL",
+    "hi_kyo_ochi": "lnsgkgsn1/7b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL",
+    "ni_mai": "lnsgkgsnl/9/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL",
+    "yon_mai": "1nsgkgsn1/9/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL",
+    "roku_mai": "2sgkgs2/9/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL"
+}
+
+kanji_translations = {
+    "k": "王將",
+    "K": "玉將",
+    "r": "後飛",
+    "R": "先飛",
+    "b": "後角",
+    "B": "先角",
+    "g": "後金",
+    "G": "先金",
+    "s": "後銀",
+    "S": "先銀",
+    "n": "後桂",
+    "N": "先桂",
+    "l": "後香",
+    "L": "先香",
+    "p": "後歩",
+    "P": "先歩",
+    "+r": "後龍",
+    "+R": "先龍",
+    "+b": "後馬",
+    "+B": "先馬",
+    "+s": "後全",
+    "+S": "先全",
+    "+n": "後今",
+    "+N": "先今",
+    "+l": "後杏",
+    "+L": "先杏",
+    "+p": "後と",
+    "+P": "先と",
+    0: "一一"
+}
+
+
+def piece_insert(choice="no_handicap"):
+    i = 0
+    j = 0
+    board_setup = board_setups[choice].split("/")
+    for line in board_setup:
+        i += 1
+        j = 0
+        for char in line:
+            j += 1
+            if char.isdigit():
+                j -= 1
+                for space in range(int(char)):
+                    j += 1
+                    board[i - 1][j - 1] = 0
+                    display_board[i - 1][j - 1] = "一一"
+            elif type(char) == str:
+                board[i - 1][j - 1] = char
+                display_board[i - 1][j - 1] = kanji_translations[char]
+
+    print("===============================================================")
+    for row in display_board:
+        for item in row:
+            print(f" | {item}", end="")
+        print(" |\n===============================================================")
+
+
+def coordinate_reading(piece, start, final):
+    while True:
+        y_start, x_start = extract_coord(start)
+        y_end, x_end = extract_coord(final)
+        if piece != board[y_start][x_start]:
+            print("That piece does not exist on that square")
+            piece, x, y = input_prompter()
+            start = x
+            final = y
+        else:
+            return y_start, x_start, y_end, x_end
+
+
+def moving(piece, y_start, x_start, y_end, x_end):
+    while True:
+        conf = function_calling[piece](piece, y_start, x_start, y_end, x_end)
+        if conf == True:
+            for i in range(len(board)):
+                for j in range(len(board[i])):
+                    display_board[i][j] = kanji_translations.get(board[i][j], board[i][j])
+            break
+        else:
+            piece, start, final = input_prompter()
+            y_start, x_start, y_end, x_end = coordinate_reading(piece, start, final)
+            continue
+
+    print(f"\nWhite's hand: {white_hand}\n")
+    print("===============================================================")
+    for row in display_board:
+        for item in row:
+            print(f" | {item}", end="")
+        print(" |\n===============================================================")
+    print(f"\nBlack's hand: {black_hand}\n")
+
+
+def pawn(piece, y_start, x_start, y_end, x_end):
+    if piece.isupper():
+        if board[y_end][x_end] != board[y_start - 1][x_start]:
+            print("That's an illegal move!")
+            return False
+        else:
+            if board[y_end][x_end] == 0:
+                board[y_start][x_start] = 0
+                board[y_end][x_end] = "P"
+            else:
+                if board[y_end][x_end] != 0:
+                    if board[y_end][x_end].isupper():
+                        print("You can't capture your own piece!")
+                        return False
+                    else:
+                        black_hand.append(kanji_translations[board[y_end][x_end].upper().replace("+", "")])
+                        board[y_start][x_start] = 0
+                        board[y_end][x_end] = "P"
+            if 0 < y_end <= 2:
+                while True:
+                    promochoice = input("Promote? (Y/N): ")
+                    if promochoice == "Y":
+                        board[y_end][x_end] = "+P"
+                        break
+                    elif promochoice == "N":
+                        board[y_end][x_end] = "P"
+                        break
+                    else:
+                        print("Invalid input, choose again: ")
+            elif y_end == 0:
+                board[y_end][x_end] = "+P"
+        return True
+
+    elif piece.islower():
+        if board[y_end][x_end] != board[y_start + 1][x_start]:
+            print("That's an illegal move!")
+            return False
+        else:
+            if board[y_end][x_end] == 0:
+                board[y_start][x_start] = 0
+                board[y_end][x_end] = "p"
+            else:
+                if board[y_end][x_end] != 0:
+                    if board[y_end][x_end].islower():
+                        print("You can't capture your own piece!")
+                        return False
+                    else:
+                        white_hand.append(kanji_translations[board[y_end][x_end].lower().replace("+", "")])
+                        board[y_start][x_start] = 0
+                        board[y_end][x_end] = "p"
+            if 8 < y_end <= 6:
+                while True:
+                    promochoice = input("Promote? (Y/N): ")
+                    if promochoice == "Y":
+                        board[y_end][x_end] = "+p"
+                        break
+                    elif promochoice == "N":
+                        board[y_end][x_end] = "p"
+                        break
+                    else:
+                        print("Invalid input, choose again.")
+            elif y_end == 8:
+                board[y_end][x_end] = "+p"
+        return True
+
+
+def lance(piece, y_start, x_start, y_end, x_end):
+    move_list = []
+    if piece.isupper():
+        if board[x_start] != board[x_end]:
+            print("That's an illegal move!")
+            return False
+        else:
+            for i in range(9):
+                move_list.append(board[i][x_start])
+            move_list.reverse()
+            move_list = move_list[(9 - y_start):9]
+            print(move_list)
+
+            num_of_squares = 0
+            for square in move_list:
+                if square != 0:
+                    if str(square).islower():
+                        num_of_squares += 1
+                        break
+                    else:
+                        break
+                else:
+                    num_of_squares += 1
+            print(num_of_squares)
+
+            if y_start - y_end > num_of_squares:
+                print("That's an illegal move!")
+            else:
+                if board[y_end][x_end] == 0:
+                    board[y_start][x_start] = 0
+                    board[y_end][x_end] = "L"
+                else:
+                    if board[y_end][x_end] != 0:
+                        if board[y_end][x_end].isupper():
+                            print("You can't capture your own piece!")
+                            return False
+                        else:
+                            black_hand.append(kanji_translations[board[y_end][x_end].upper().replace("+", "")])
+                            board[y_start][x_start] = 0
+                            board[y_end][x_end] = "L"
+
+
+function_calling = {
+    "K": "玉將",
+    "k": "王將",
+    "R": "後飛",
+    "r": "先飛",
+    "B": "後角",
+    "b": "先角",
+    "G": "後金",
+    "g": "先金",
+    "S": "後銀",
+    "s": "先銀",
+    "N": "後桂",
+    "n": "先桂",
+    "L": lance,
+    "l": lance,
+    "P": pawn,
+    "p": pawn,
+    "+R": "後龍",
+    "+r": "先龍",
+    "+B": "後馬",
+    "+b": "先馬",
+    "+S": "後全",
+    "+s": "先全",
+    "+N": "後今",
+    "+n": "先今",
+    "+L": "後杏",
+    "+l": "先杏",
+    "+T": "後と",
+    "+t": "先と"
+}
+
+
+def input_prompter():
+    selected_piece = input("Select piece: ")
+    while True:
+        if selected_piece not in kanji_translations:
+            selected_piece = input("Invalid, choose a valid piece:")
+        else:
+            break
+    start, final = str(input("Starting and Destination Square Coordinates: ")).split()
+    return selected_piece, start, final
+
+
+def extract_coord(coords):
+    x = int(coords[0])
+    y = int(coords[1])
+    return x, y
+
+
+def full_run():
+    piece, start, final, from1, from2, dest1, dest2 = 0, 0, 0, 0, 0, 0, 0
+    piece, start, final = input_prompter()
+    from1, from2, dest1, dest2 = coordinate_reading(piece, start, final)
+    return piece, from1, from2, dest1, dest2
+
+
+piece_insert()
+while True:
+    piece, from1, from2, dest1, dest2 = full_run()
+    moving(piece, from1, from2, dest1, dest2)
